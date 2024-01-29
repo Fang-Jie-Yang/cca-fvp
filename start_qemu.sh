@@ -1,7 +1,7 @@
 #! /bin/bash
 
-ROOTFS="rootfs.ext4"
-KERNEL="linux/arch/arm64/boot/Image"
+ROOTFS="build/rootfs.ext4"
+KERNEL="build/linux/arch/arm64/boot/Image"
 ## booting a arm64 vm using rootfs previously made
 
 # TODO: if on arm64 platform, we should try to use kvm

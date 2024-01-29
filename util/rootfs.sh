@@ -2,10 +2,14 @@
 
 ## make a new (arm64) ubuntu 22.04 rootfs for VM, FVP simulation
 
+sudo apt install qemu-system qemu-utils
+
 RELEASE_URL="https://cloud-images.ubuntu.com/releases/jammy/release"
 IMAGE="ubuntu-22.04-server-cloudimg-arm64-root.tar.xz"
 ROOTFS="rootfs.ext4"
 ROOT_PASSWD="root::0:0:root:/root:/bin/bash"
+
+cd $PWD/build
 
 if [[ ! -e ${IMAGE} ]]; then
 	wget ${RELEASE_URL}/${IMAGE}

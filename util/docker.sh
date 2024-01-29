@@ -17,3 +17,7 @@ sudo systemctl enable docker
 sudo systemctl start docker
 sudo systemctl enable containerd
 sudo systemctl start containerd
+
+sudo groupadd docker
+sudo usermod -aG docker $USER
+newgrp docker

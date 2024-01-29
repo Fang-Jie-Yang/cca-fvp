@@ -2,6 +2,12 @@
 
 ## compile a (arm64) linux kernel for VM, FVP simulation
 
+cd $PWD/build
+
+sudo apt install build-essential flex bison
+sudo apt install gcc gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
+sudo apt install libssl-dev
+
 if [[ ! -e "linux" ]]; then
 	git clone --depth=1 --branch=v6.7 https://github.com/torvalds/linux.git
 fi

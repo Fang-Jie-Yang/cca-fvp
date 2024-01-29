@@ -1,3 +1,6 @@
 
 
-# to remove snap in rootfs, boot vm via qemu, and then ...
+# to remove snap in rootfs
+* boot VM via QEMU
+* `sudo apt autoremove --purge snapd`
+* `sudo apt-mark hold snapd`
