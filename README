@@ -4,3 +4,7 @@
 * boot VM via QEMU
 * `sudo apt autoremove --purge snapd`
 * `sudo apt-mark hold snapd`
+* `sudo systemctl disable snapd`
+
+# network in VM
+* `ip link set enp0s1 up; dhclient`
