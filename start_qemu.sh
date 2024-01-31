@@ -9,12 +9,9 @@ ARCH=$(uname -m)
 KVM=""
 if [[ ${ARCH} =~ "aarch64" ]]; then
 	KVM="--enable-kvm"
-
-	sudo usermod -aG kvm ${USER}
-	# reload groups
-	exec su -l $USER
 fi
 
+sudo \
 qemu-system-aarch64 \
 ${KVM} \
 -machine virt,gic-version=max -m 1024M -cpu max -smp 4 \
