@@ -2,6 +2,7 @@
 
 ## make a new (arm64) ubuntu 22.04 rootfs for VM, FVP simulation
 
+sudo apt update
 sudo apt install qemu-system qemu-utils
 
 RELEASE_URL="https://cloud-images.ubuntu.com/releases/jammy/release"
