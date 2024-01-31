@@ -5,3 +5,5 @@ util/rootfs.sh
 util/kernel.sh
 util/docker.sh
 util/shrinkwrap.sh
+
+sudo reboot
