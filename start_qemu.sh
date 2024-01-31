@@ -20,7 +20,7 @@ ${KVM} \
 -device virtio-net-pci,netdev=vnet \
 -drive if=none,file=${ROOTFS},id=vda,cache=none,format=raw \
 -device virtio-blk-pci,drive=vda \
--nographic -serial stdio \
+-nographic -serial mon:stdio \
 -append "console=ttyAMA0 root=/dev/vda rw earlycon=pl011,0x09000000" \
 -monitor none 
 
