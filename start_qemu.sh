@@ -4,9 +4,15 @@ ROOTFS="build/rootfs.ext4"
 KERNEL="build/linux/arch/arm64/boot/Image"
 ## booting a arm64 vm using rootfs previously made
 
-# TODO: if on arm64 platform, we should try to use kvm
+# TODO: maybe we can just use chroot
+ARCH=$(uname -m)
+if [[ ${ARCH} =~ "aarch64" ]]; then
+	sudo usermod -aG kvm ${USER}
+	KVM="--enable-kvm"
+fi
 
 qemu-system-aarch64 \
+${KVM} \
 -machine virt,gic-version=max -m 1024M -cpu max -smp 4 \
 -kernel ${KERNEL} \
 -netdev user,id=vnet \
