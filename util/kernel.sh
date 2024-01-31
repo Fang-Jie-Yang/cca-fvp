@@ -4,11 +4,11 @@
 
 cd $PWD/build
 
-sudo apt update
-sudo apt install bc
-sudo apt install build-essential flex bison
-sudo apt install gcc gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
-sudo apt install libssl-dev
+yes | sudo apt update
+yes | sudo apt install bc
+yes | sudo apt install build-essential flex bison
+yes | sudo apt install gcc gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
+yes | sudo apt install libssl-dev
 
 if [[ ! -e "linux" ]]; then
 	git clone --depth=1 --branch=v6.7 https://github.com/torvalds/linux.git
