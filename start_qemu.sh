@@ -6,10 +6,13 @@ KERNEL="build/linux/arch/arm64/boot/Image"
 
 # TODO: maybe we can just use chroot
 ARCH=$(uname -m)
+KVM=""
 if [[ ${ARCH} =~ "aarch64" ]]; then
-	sudo usermod -aG kvm ${USER}
-	newgrp kvm
 	KVM="--enable-kvm"
+
+	sudo usermod -aG kvm ${USER}
+	# reload groups
+	exec su -l $USER
 fi
 
 qemu-system-aarch64 \
