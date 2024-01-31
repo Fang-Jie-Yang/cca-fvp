@@ -5,6 +5,7 @@
 cd $PWD/build
 
 sudo apt update
+sudo apt bc
 sudo apt install build-essential flex bison
 sudo apt install gcc gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
 sudo apt install libssl-dev
