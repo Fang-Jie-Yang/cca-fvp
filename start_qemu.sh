@@ -8,6 +8,7 @@ KERNEL="build/linux/arch/arm64/boot/Image"
 ARCH=$(uname -m)
 if [[ ${ARCH} =~ "aarch64" ]]; then
 	sudo usermod -aG kvm ${USER}
+	newgrp kvm
 	KVM="--enable-kvm"
 fi
 
