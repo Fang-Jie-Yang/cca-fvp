@@ -23,5 +23,3 @@ sudo su -c "mkdir mnt/cca"
 sudo su -c "cp guest-disk.img KVMTOOL_EFI.fd lkvm mnt/cca/."
 sudo su -c "umount mnt"
 sudo su -c "rm -rf mnt"
-
-sudo reboot
