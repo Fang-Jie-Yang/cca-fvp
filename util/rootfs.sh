@@ -19,7 +19,7 @@ fi
 if [[ -e ${ROOTFS} ]]; then
 	rm ${ROOTFS}
 fi
-qemu-img create -f raw ${ROOTFS} 20G
+qemu-img create -f raw ${ROOTFS} 10G
 mkfs.ext4 ${ROOTFS}
 
 if sudo mount ${ROOTFS} /mnt; then
