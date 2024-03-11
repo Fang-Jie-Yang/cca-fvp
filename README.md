@@ -2,8 +2,8 @@
 ## Scripts for running CCA on FVP
 * `setup.sh`: setup environment (shrinkwarp, QEMU, rootfs, linux kernel)
 * `start_fvp.sh`: boot linux-cca with `build/rootfs.ext4` as root with FVP
-* `start_qemu.sh`: boot linux with `build/rootfs.ext4` as root with FVP
-* `build/rootfs.ext4`: standard ubuntu cloud image
+* `start_qemu.sh`: boot linux with `build/rootfs.ext4` as root with QEMU
+* `build/rootfs.ext4`: standard ubuntu 22.04 cloud image
 
 ## Some tips for booting faster
 * remove snap in rootfs
