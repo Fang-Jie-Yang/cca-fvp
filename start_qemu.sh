@@ -14,7 +14,7 @@ fi
 sudo \
 qemu-system-aarch64 \
 ${KVM} \
--machine virt,gic-version=max -m 1024M -cpu max -smp 4 \
+-machine virt,gic-version=max -m 16G -cpu max -smp 4 \
 -kernel ${KERNEL} \
 -netdev user,id=vnet \
 -device virtio-net-pci,netdev=vnet \
