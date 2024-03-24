@@ -7,4 +7,7 @@ export PATH=$PWD/build/shrinkwrap/shrinkwrap:$PATH
 export SHRINKWRAP_BUILD=$PWD/build/shrinkwrap_build
 export SHRINKWRAP_PACKAGE=$PWD/build/shrinkwrap_package
 
-shrinkwrap run cca-3world.yaml --rtvar ROOTFS=${ROOTFS}
+#CONFIG="cca-3world.yaml"
+CONFIG="cca-3world-migration.yaml"
+
+shrinkwrap run ${CONFIG} --rtvar ROOTFS=${ROOTFS}

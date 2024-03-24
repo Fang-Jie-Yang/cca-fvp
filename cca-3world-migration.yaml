@@ -1,0 +1,258 @@
+# Copyright (c) 2022, Arm Limited.
+# SPDX-License-Identifier: MIT
+
+%YAML 1.2
+---
+description: >-
+  Brings together a software stack to demonstrate Arm CCA running on FVP in a
+  three-world configuration. Includes TF-A in root world, RMM in realm world,
+  and EDK2 and Linux in Normal world on the host. Guests can be launched
+  in-realm in a number of configurations using kvmtool. EDK2 can be optionally
+  used as guest FW.
+
+  If the user provides an ext2/4 filesystem image via the GUEST_ROOTFS btvar, a
+  guest disk image is created that includes a FAT16 partition containing the
+  guest kernel (to be loaded by the guest EDK2 FW), and the provided filesystem
+  as the rootfs. The user can provide their own filesystem image, or
+  alternatively use a simple buildroot image created with buildroot.yaml:
+
+  .. code-block:: shell
+    $ shrinkwrap build cca-3world.yaml --overlay buildroot.yaml --btvar GUEST_ROOTFS='${artifact:BUILDROOT}'
+
+  Once built, the user must get some of the generated artifacts into the FVP
+  environment. This can either be done by copying them to the host's rootfs or
+  by sharing them into the FVP using 9p.
+
+  If copying to the rootfs, something like this should work. For simplicity,
+  this example reuses the guest filesystem generated with buildroot as the
+  host's rootfs, after resizing it so that there is room for the guest's rootfs:
+
+  .. code-block:: shell
+    $ cd ~/.shrinkwrap/package/cca-3world
+    $ e2fsck -fp rootfs.ext2
+    $ resize2fs rootfs.ext2 256M
+    $ sudo su
+    # mkdir mnt
+    # mount rootfs.ext2 mnt
+    # mkdir mnt/cca
+    # cp guest-disk.img KVMTOOL_EFI.fd lkvm mnt/cca/.
+    # umount mnt
+    # rm -rf mnt
+    # exit
+
+  Now you can boot the host, using the rootfs we just modified, either using DT:
+
+  .. code-block:: shell
+    $ shrinkwrap run cca-3world.yaml --rtvar ROOTFS=rootfs.ext2
+
+  Or alternatively, using ACPI:
+
+  .. code-block:: shell
+    $ shrinkwrap run cca-3world.yaml -r ROOTFS=rootfs.ext2 --rtvar CMDLINE="mem=1G earlycon root=/dev/vda ip=dhcp acpi=force"
+
+  Or if taking the shared directory approach, simply boot the host with the
+  SHARE rtvar. This only works for DT-based environments:
+
+  .. code-block:: shell
+    $ cd ~/.shrinkwrap/package/cca-3world
+    $ shrinkwrap run cca-3world.yaml --rtvar ROOTFS=rootfs.ext2 --rtvar SHARE=.
+
+  Finally, once the host has booted, log in as "root" (no password), and launch
+  a realm using kvmtool. Note the mount command is only required if sharing a
+  directory:
+
+  .. code-block:: shell
+    # mkdir /cca
+    # mount -t 9p -o trans=virtio,version=9p2000.L FM /cca
+    # cd /cca
+    # ./lkvm run --realm --disable-sve --irqchip=gicv3-its --firmware KVMTOOL_EFI.fd -c 1 -m 512 --no-pvtime --force-pci --disk guest-disk.img --measurement-algo=sha256
+
+  Be patient while this boots to the UEFI shell. Navigate to "Boot Manager",
+  then "UEFI Shell" and wait for the startup.nsh script to execute, which will
+  launch the kernel. Continue to be patient, and eventually you will land at a
+  login prompt. Login as "root" (no password).
+
+  This config also builds kvm-unit-tests, which can be run in the realm instead
+  of Linux. It is also possible to launch Linux without using EDK2 as the guest
+  FW.
+
+concrete: true
+
+layers:
+  - ns-edk2.yaml
+  - rmm-base.yaml
+  - linux-base.yaml
+  - kvmtool-base.yaml
+  - arch/v9.2.yaml
+
+build:
+  rmm:
+    repo:
+      remote: git@github.com:ntu-ssl/cca-rmm.git
+      revision: tf-rmm-v0.4.0-migration
+
+    toolchain: aarch64-none-elf-
+
+    params:
+      -DRMM_CONFIG: fvp_defcfg
+      -DCMAKE_BUILD_TYPE: Release
+      -DLOG_LEVEL: 40
+
+    build:
+      - cmake ${param:join_equal} -S . -B ${param:builddir}
+      - cmake --build ${param:builddir} -j ${param:jobs}
+
+    artifacts:
+      RMM: ${param:builddir}/Release/rmm.img
+  tfa:
+    params:
+      ENABLE_RME: 1
+      RMM: ${artifact:RMM}
+      FVP_HW_CONFIG: ${artifact:DTB}
+
+  edk2:
+    repo:
+      edk2:
+        remote: https://git.gitlab.arm.com/linux-arm/edk2-cca.git
+        revision: 2802_arm_cca_rmm-v1.0-eac5
+      edk2-platforms:
+        remote: https://git.gitlab.arm.com/linux-arm/edk2-platforms-cca.git
+        revision: 2802_arm_cca_rmm-v1.0-eac5
+
+  linux:
+    repo:
+      remote: git@github.com:ntu-ssl/linux-cca.git
+      revision: cca-full/rmm-v1.0-eac5-migration
+
+  kvmtool:
+    repo:
+      dtc:
+        revision: v1.6.1
+      kvmtool:
+        remote: https://gitlab.arm.com/linux-arm/kvmtool-cca
+        revision: cca/rmm-v1.0-eac5
+
+  kvm-unit-tests:
+    repo:
+      remote: https://gitlab.arm.com/linux-arm/kvm-unit-tests-cca
+      revision: cca/rmm-v1.0-eac5
+
+    toolchain: aarch64-linux-gnu-
+
+    params:
+      --arch: arm64
+      --cross-prefix: $${CROSS_COMPILE}
+      --target: kvmtool
+
+    build:
+      - ./configure ${param:join_equal}
+      - make -j${param:jobs}
+      - tar -caf ${param:builddir}/kvm-unit-tests.tgz -C ${param:sourcedir} .
+
+        #clean:
+        #- make -j${param:jobs} clean
+
+    artifacts:
+      KVM_UNIT_TESTS: ${param:builddir}/kvm-unit-tests.tgz
+
+  edk2-cca-guest:
+    repo:
+      edk2:
+        remote: https://git.gitlab.arm.com/linux-arm/edk2-cca.git
+        revision: 2802_arm_cca_rmm-v1.0-eac5
+
+    toolchain: aarch64-none-elf-
+
+    stderrfilt: true
+
+    prebuild:
+      - export WORKSPACE=${param:sourcedir}
+      - export GCC5_AARCH64_PREFIX=$$CROSS_COMPILE
+      - export PACKAGES_PATH=$$WORKSPACE/edk2
+      - export IASL_PREFIX=${artifact:ACPICA}/
+      - export PYTHON_COMMAND=/usr/bin/python3
+
+    params:
+      -a: AARCH64
+      -t: GCC5
+      -p: edk2/ArmVirtPkg/ArmVirtKvmTool.dsc
+      -b: RELEASE
+
+    build:
+      - source edk2/edksetup.sh --reconfig
+      - make -j${param:jobs} -C edk2/BaseTools
+      - build -n ${param:jobs} -D EDK2_OUT_DIR=${param:builddir} ${param:join_space}
+
+    artifacts:
+      EDK2_CCA_GUEST: ${param:builddir}/RELEASE_GCC5/FV/KVMTOOL_EFI.fd
+
+  guest-disk:
+    build:
+      - BOOTIMG="${param:builddir}/boot.img"
+      - ROOTIMG="${btvar:GUEST_ROOTFS}"
+      - DISKIMG="${param:builddir}/guest-disk.img"
+      - STARTUP="${param:builddir}/startup.nsh"
+
+      # Automatically boot the kernel when starting the EFI shell.
+      - echo "bootaa64.efi acpi=force earlycon root=/dev/vda2 ip=on" > $${STARTUP}
+
+      # 64MB fat16 boot partition containing kernel as efi bootloader.
+      - dd if=/dev/zero of=$${BOOTIMG} bs=1M count=64 status=none
+      - mkfs.vfat -F16 -n boot $${BOOTIMG} &> /dev/null
+      - mcopy -spm -i $${BOOTIMG} ${artifact:KERNEL} ::bootaa64.efi
+      - mcopy -spm -i $${BOOTIMG} $${STARTUP} ::startup.nsh
+
+      # If no rootfs was provided, create an empty one to use.
+      - if [ -z "$${ROOTIMG}" ]; then
+      -   ROOTIMG="${param:builddir}/root.img"
+      -   dd if=/dev/zero of=$${ROOTIMG} bs=1M count=64 status=none
+      -   mkfs.ext4 $${ROOTIMG} &> /dev/null
+      - fi
+
+      # Disk image with 1MB start and end blocks for GPT, sandwiching the boot
+      # partition and the rootfs.
+      - dd if=/dev/zero bs=512 count=2048 status=none > $${DISKIMG}
+      - dd if=$${BOOTIMG} status=none >> $${DISKIMG}
+      - dd if=$${ROOTIMG} status=none >> $${DISKIMG}
+      - dd if=/dev/zero bs=512 count=2048 status=none >> $${DISKIMG}
+
+      # Add the partition table.
+      - parted $${DISKIMG} mktable gpt mkpart boot fat16 1MiB 65MiB mkpart root ext4 65MiB 100% &> /dev/null
+
+    artifacts:
+      GUEST_DISK: ${param:builddir}/guest-disk.img
+
+buildex:
+  btvars:
+    GUEST_ROOTFS:
+      type: path
+      value: ''
+
+run:
+  rtvars:
+    KERNEL:
+      value: ${artifact:KERNEL}
+
+  params:
+    -C cluster0.rme_support_level: 2
+    -C cluster1.rme_support_level: 2
+
+    # Suppress "WARNING: MPAM_NS is deprecated when RME is in use. Should use MPAM_SP"
+    -C cluster0.output_attributes: ExtendedID[62:55]=MPAM_PMG,ExtendedID[54:39]=MPAM_PARTID,ExtendedID[38:37]=MPAM_SP
+    -C cluster1.output_attributes: ExtendedID[62:55]=MPAM_PMG,ExtendedID[54:39]=MPAM_PARTID,ExtendedID[38:37]=MPAM_SP
+
+    # CCA-specific SMMU settings.
+    -C pci.pci_smmuv3.mmu.SMMU_ROOT_IDR0: 3
+    -C pci.pci_smmuv3.mmu.SMMU_ROOT_IIDR: 0x43B
+    -C pci.pci_smmuv3.mmu.root_register_page_offset: 0x20000
+
+    # Enable FEAT_CSV2_2, which is optional. But TFA 2.10 force-enables it when
+    # ENABLE_RME=1 so if it's not there we see an exception.
+    -C cluster0.restriction_on_speculative_execution: 2
+    -C cluster1.restriction_on_speculative_execution: 2
+    -C cluster0.restriction_on_speculative_execution_aarch32: 2
+    -C cluster1.restriction_on_speculative_execution_aarch32: 2
+
+  terminals:
+    bp.terminal_3:
+      friendly: rmm
