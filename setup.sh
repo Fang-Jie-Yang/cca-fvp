@@ -9,7 +9,8 @@ util/shrinkwrap.sh
 # start docker manually
 sudo service docker start
 
-./shrinkwrap_build.sh
+# run shrinkwrap as docker group
+sg docker -c "./shrinkwrap_build.sh"
 
 ROOTFS="$PWD/build/rootfs.ext4"
 SHRINKWRAP_PACKAGE=$PWD/build/shrinkwrap_package
