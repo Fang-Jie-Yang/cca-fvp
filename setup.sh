@@ -15,6 +15,7 @@ sudo service docker start
 # run shrinkwrap as docker group
 sg docker -c "./shrinkwrap_build.sh"
 
+# TODO: move to a separate .sh
 ROOTFS="$PWD/build/rootfs.ext4"
 SHRINKWRAP_PACKAGE=$PWD/build/shrinkwrap_package
 cd ${SHRINKWRAP_PACKAGE}/cca-3world
