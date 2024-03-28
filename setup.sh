@@ -1,5 +1,8 @@
 #! /bin/bash
 
+git clone --depth=1 --branch=cca-full/rmm-v1.0-eac5-migration git@github.com:ntu-ssl/linux-cca.git
+git clone git@github.com:ntu-ssl/cca-rmm.git
+
 mkdir build
 util/rootfs.sh
 util/kernel.sh
@@ -14,7 +17,7 @@ sg docker -c "./shrinkwrap_build.sh"
 
 ROOTFS="$PWD/build/rootfs.ext4"
 SHRINKWRAP_PACKAGE=$PWD/build/shrinkwrap_package
-cd ${SHRINKWRAP_PACKAGE}/cca-3world
+cd ${SHRINKWRAP_PACKAGE}/cca-3world-migration
 e2fsck -fp rootfs.ext2
 resize2fs rootfs.ext2 32G
 sudo su -c "mkdir mnt"
