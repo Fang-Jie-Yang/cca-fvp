@@ -88,8 +88,7 @@ layers:
 build:
   rmm:
     repo:
-      remote: git@github.com:ntu-ssl/cca-rmm.git
-      revision: tf-rmm-v0.4.0-migration
+      sourcedir: ${param:builddir}/cca-rmm
 
     toolchain: aarch64-none-elf-
 
@@ -121,8 +120,7 @@ build:
 
   linux:
     repo:
-      remote: git@github.com:ntu-ssl/linux-cca.git
-      revision: cca-full/rmm-v1.0-eac5-migration
+      sourcedir: ${param:builddir}/linux-cca
 
   kvmtool:
     repo:
