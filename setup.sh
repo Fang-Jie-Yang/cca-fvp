@@ -17,7 +17,7 @@ sg docker -c "./shrinkwrap_build.sh"
 
 ROOTFS="$PWD/build/rootfs.ext4"
 SHRINKWRAP_PACKAGE=$PWD/build/shrinkwrap_package
-cd ${SHRINKWRAP_PACKAGE}/cca-3world-migration
+cd ${SHRINKWRAP_PACKAGE}/cca-3world
 e2fsck -fp rootfs.ext2
 resize2fs rootfs.ext2 32G
 sudo su -c "mkdir mnt"
