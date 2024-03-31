@@ -16,7 +16,7 @@
   * `systemctl disable systemd-networkd-wait-online`
 ## For QEMU compilation
 * `apt update`
-* `apt install git vim build-essential ninja-build pkg-config libglib2.0-dev libpixman-1-dev`
+* `apt install git vim build-essential ninja-build pkg-config libglib2.0-dev libpixman-1-dev python3 python3-pip`
 ## To enable network in VM
 * `dhclient`
 ## To boot Realm VM in FVP guest
