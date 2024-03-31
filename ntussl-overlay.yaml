@@ -1,5 +1,0 @@
-build:
-  linux:
-    sourcedir: ${param:builddir}/linux-cca
-  rmm:
-    sourcedir: ${param:builddir}/cca-rmm
