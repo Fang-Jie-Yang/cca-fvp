@@ -1,7 +1,7 @@
 #! /bin/bash
 
-#git clone --depth=1 --branch=cca-full/rmm-v1.0-eac5-migration git@github.com:ntu-ssl/linux-cca.git
-#git clone --recurse-submodules git@github.com:ntu-ssl/cca-rmm.git
+git clone --depth=1 --branch=cca-full/rmm-v1.0-eac5-migration git@github.com:ntu-ssl/linux-cca.git
+git clone --recurse-submodules git@github.com:ntu-ssl/cca-rmm.git
 cat << EOF > ntussl-overlay.yaml
 build:
   linux:
@@ -22,17 +22,12 @@ sudo service docker start
 # run shrinkwrap as docker group
 sg docker -c "./shrinkwrap_build.sh"
 
-# TODO: move to a separate .sh
+# setup images, binary for Realm guest
 ROOTFS="$PWD/build/rootfs.ext4"
-SHRINKWRAP_PACKAGE=$PWD/build/shrinkwrap_package
-cd ${SHRINKWRAP_PACKAGE}/cca-3world
-e2fsck -fp rootfs.ext2
-resize2fs rootfs.ext2 32G
+cd build/shrinkwrap_package/cca-3world
 sudo su -c "mkdir mnt"
 sudo su -c "mount ${ROOTFS} mnt"
 sudo su -c "mkdir mnt/cca"
-sudo su -c "cp guest-disk.img KVMTOOL_EFI.fd lkvm mnt/cca/."
+sudo su -c "cp rootfs.ext2 guest-disk.img KVMTOOL_EFI.fd lkvm mnt/cca/."
 sudo su -c "umount mnt"
 sudo su -c "rm -rf mnt"
-
-sudo reboot
