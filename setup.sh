@@ -1,6 +1,6 @@
 #! /bin/bash
 
-git clone --depth=1 --branch=cca-full/rmm-v1.0-eac5-migration git@github.com:ntu-ssl/linux-cca.git
+git clone --depth=1 --branch=migration git@github.com:ntu-ssl/linux-cca.git
 git clone --recurse-submodules git@github.com:ntu-ssl/cca-rmm.git
 cat << EOF > ntussl-overlay.yaml
 build:
